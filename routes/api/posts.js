@@ -1,6 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const mongoose = require('mongoose')
 const passport = require('passport')
 
 // Post model
@@ -29,8 +28,8 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
 
     const newPost = new Post({
         text: req.body.text,
-        name: req.body.name,
-        avatar: req.body.avatar,
+        name: req.user.name,
+        avatar: req.user.avatar,
         user: req.user.id
     })
 
@@ -46,7 +45,7 @@ router.get('/', (req, res) => {
     Post.find()
         .sort({date: -1})
         .then(posts => res.json(posts))
-        .catch(err => res.status(404).json({notfoundposts: 'Posts not found'}))
+        .catch(() => res.status(404).json({notfoundposts: 'Posts not found'}))
 })
 
 // @route GET api/posts/:id
@@ -56,7 +55,7 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
     Post.findById(req.params.id)
         .then(post => res.json(post))
-        .catch(err => res.status(404).json({notfoundpost: 'Post not found'}))
+        .catch(() => res.status(404).json({notfoundpost: 'Post not found'}))
 })
 
 // @route DELETE api/posts/:id
@@ -65,7 +64,7 @@ router.get('/:id', (req, res) => {
 
 router.delete('/:id', passport.authenticate('jwt', {session: false}), (req, res) => {
     Profile.findOne({ user: req.user.id })
-        .then(profile => {
+        .then(() => {
             Post.findById(req.params.id)
                 .then(post => {
                     if(post.user.toString() !== req.user.id) {
@@ -85,7 +84,7 @@ router.delete('/:id', passport.authenticate('jwt', {session: false}), (req, res)
 
 router.post('/like/:id', passport.authenticate('jwt', {session: false}), (req, res) => {
     Profile.findOne({ user: req.user.id })
-        .then(profile => {
+        .then(() => {
             Post.findById(req.params.id)
                 .then(post => {
                     if(post.likes.filter(like => like.user.toString() === req.user.id).length > 0) {
@@ -106,7 +105,7 @@ router.post('/like/:id', passport.authenticate('jwt', {session: false}), (req, r
 
 router.post('/unlike/:id', passport.authenticate('jwt', {session: false}), (req, res) => {
     Profile.findOne({ user: req.user.id })
-        .then(profile => {
+        .then(() => {
             Post.findById(req.params.id)
                 .then(post => {
                     if(post.likes.filter(like => like.user.toString() === req.user.id).length === 0) {
@@ -140,8 +139,8 @@ router.post('/comment/:id', passport.authenticate('jwt', {session: false}), (req
         .then(post => {
             const newComment = {
                 text: req.body.text,
-                name: req.body.name,
-                avatar: req.body.avatar,
+                name: req.user.name,
+                avatar: req.user.avatar,
                 user: req.user.id
             }
 
@@ -171,7 +170,7 @@ router.delete('/comment/:id/:comment_id', passport.authenticate('jwt', {session:
 
             post.save().then(post => res.json(post))
         })
-        .catch(err => res.status(404).json({nopostfound: 'No post found'}))
+        .catch(() => res.status(404).json({nopostfound: 'No post found'}))
 })
 
 module.exports = router

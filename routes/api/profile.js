@@ -1,6 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const mongoose = require('mongoose')
 const passport = require('passport')
 
 // Load validation
@@ -73,15 +72,12 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
     Profile.findOne({ user: req.user.id })
         .then(profile => {
             if(profile) {
-                // Update
                 Profile.findOneAndUpdate(
                     { user: req.user.id },
                     { $set: profileFields },
                     { new: true }
                 ).then(profile => res.json(profile))
             } else {
-                // Create
-                // Check if handle exists
                 Profile.findOne({ handle: req.body.handle })
                     .then(profile => {
                         if(profile) {
@@ -89,7 +85,6 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
                             return res.status(400).json(errors)
                         }
 
-                        // Save Profile
                         new Profile(profileFields).save()
                             .then(profile => res.json(profile))
                     })
@@ -113,7 +108,7 @@ router.get('/all', (req, res) => {
 
             res.json(profiles)
         })
-        .catch(err => res.status(404).json({profile: 'There are no profiles'}))
+        .catch(() => res.status(404).json({profile: 'There are no profiles'}))
 })
 
 // @route GET api/profile/handle/:handle
@@ -132,7 +127,7 @@ router.get('/handle/:handle', (req, res) => {
 
             res.json(profile)
         })
-        .catch(err => res.status(404).json({profile: 'There is no profile for this user'}))
+        .catch(() => res.status(404).json({profile: 'There is no profile for this user'}))
 })
 
 // @route GET api/profile/user/:user_id
@@ -151,7 +146,7 @@ router.get('/user/:user_id', (req, res) => {
 
             res.json(profile)
         })
-        .catch(err => res.status(404).json({profile: 'There is no profile for this user'}))
+        .catch(() => res.status(404).json({profile: 'There is no profile for this user'}))
 })
 
 // @route POST api/profile/experience
@@ -177,7 +172,6 @@ router.post('/experience', passport.authenticate('jwt', { session: false }), (re
                 description
             }
 
-            // Add exp array
             profile.experience.unshift(newExperience)
 
             profile.save().then(profile => res.json(profile))
@@ -191,15 +185,12 @@ router.post('/experience', passport.authenticate('jwt', { session: false }), (re
 router.delete('/experience/:exp_id', passport.authenticate('jwt', { session: false }), (req, res) => {
     Profile.findOne({ user: req.user.id })
         .then(profile => {
-            // GET remove index
             const removeIndex = profile.experience
                 .map(exp => exp.id)
                 .indexOf(req.params.exp_id)
             
-            // Splice out of array
             profile.experience.splice(removeIndex, 1)
 
-            // Save
             profile.save().then(profile => res.json(profile)).catch(err => res.status(404).json(err))
         })
 })
@@ -227,7 +218,6 @@ router.post('/education', passport.authenticate('jwt', { session: false }), (req
                 description
             }
 
-            // Add exp array
             profile.education.unshift(newEducation)
 
             profile.save().then(profile => res.json(profile))
@@ -241,15 +231,12 @@ router.post('/education', passport.authenticate('jwt', { session: false }), (req
 router.delete('/education/:edu_id', passport.authenticate('jwt', { session: false }), (req, res) => {
     Profile.findOne({ user: req.user.id })
         .then(profile => {
-            // GET remove index
             const removeIndex = profile.education
                 .map(edu => edu.id)
                 .indexOf(req.params.edu_id)
             
-            // Splice out of array
             profile.education.splice(removeIndex, 1)
 
-            // Save
             profile.save().then(profile => res.json(profile)).catch(err => res.status(404).json(err))
         })
 })

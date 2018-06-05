@@ -150,3 +150,6 @@ Post
         DELETE api/posts/comment/:id/:comment_id
         // Delete a comment by Id from a post
         // Private
+
+## Credits
+[Traversy Media Udemy course](https://www.udemy.com/mern-stack-front-to-back/learn/v4/content)
